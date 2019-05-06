@@ -1,0 +1,1 @@
+https://data.bnf.fr/sparql?default-graph-uri=&query=SELECT+DISTINCT+%3Fauteur+WHERE%0D%0A%7B%0D%0A++++%3Fauteur+foaf%3Afocus+%3Fidentity.%0D%0A++++%3Fidentity+foaf%3AfamilyName+%3Fnom.%0D%0A%7D&format=application%2Fsparql-results%2Bjson&timeout=1000000000&should-sponge=soft&debug=on
