@@ -12,7 +12,7 @@ def toLink(s):
 
 def create_event(date, place, descr, link):
     if not date:
-        return None
+        return ''
     date = date.replace('-', '.')
     event = '*' + toLink(date)
     if place:
@@ -58,6 +58,7 @@ def get_work(works, work, content, name, surname, push):
         title = w.get('label') + ' (' + surname + ')'
         event = toLink(key_word) + ' par ' + toLink(name) + ' de ' + toLink(title + '|' + w.get('label'))
         info = get_json(w_url + 'rdf.jsonld')
+        work_id = w.get('ark')[-9:]
         if info:
             for i in info['@graph']:
                 cand_type = i.get('bnf-onto:subject')
@@ -65,10 +66,13 @@ def get_work(works, work, content, name, surname, push):
                     event += ' (' + toLink(cand_type) + ')'
                     break
         work_line = create_event(w.get('publication'), None, event, w_url)
-        content.append(work_line)
+        if work_line:
+            content.append(work_line)
         if push:
-            None
-            push_page(title, work_line, create_update)
+            work_content = 'Wikidata: ([https://www.wikidata.org/wiki/Q386724 Q386724])\n\n'
+            work_content += 'BnF ID: [' + w_url + ' ' + work_id[-9:] + ']\n\n'
+            work_content += work_line
+            push_page(title, work_content, create_update)
 
 def add_works(content, author, works, name, surname, push):
     # Author's contributions
@@ -91,7 +95,7 @@ def add_works(content, author, works, name, surname, push):
 def sanitize(s):
     return s.strip().replace('É', 'E')
 
-def create_author_data(author_link, index, test, push):
+def create_author_data(author_link, index, test):
 
     author = get_json(author_link + '.json')[0]
 
@@ -111,17 +115,21 @@ def create_author_data(author_link, index, test, push):
         title = 'Test ' + title
 
     content = []
-    import_page(content, title)
+    push = import_page(content, title)
     add_biography(content, author, works, name, author_link)
     nb_works = add_works(content, author, works, name, surname, push)
     # Remove duplicates if bot already there
     content = list(set(content))
     content.sort()
     content.insert(0, 'Wikidata: ([https://www.wikidata.org/wiki/Q5 Q5])\n')
-    content.insert(1, 'BnF ID: ' + author_link[-9:] + '\n')
+    content.insert(1, 'BnF ID: [' + author_link + ' ' + author_link[-9:] + ']\n')
     content_string = '\n'.join(content)
 
     if push:
         push_page(title, content_string, create_update)
         print('%06d: %s\n- %d works' % (index, name, nb_works))
+    else:
+        f = open('log/exists_'+uuid.uuid4().hex, 'w')
+        f.write(content_string)
+        f.close()
 

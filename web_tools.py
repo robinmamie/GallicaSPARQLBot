@@ -54,10 +54,12 @@ def import_page(content, title):
     url = baseurl + '/wikipast/api.php?%s' % qs
     tree = lxml.etree.parse(urlopen(url))
     revs = tree.xpath('//rev')
-    if revs:
+    if revs and revs[-1].text:
         old_content = revs[-1].text.split('\n')
         listed_old_content = [x for x in old_content if x and x[0] == '*']
         content.extend(listed_old_content)
+        return False
+    return True
 
 def push_page(page, content, summary):
     name = page
@@ -73,6 +75,7 @@ def get_json(link):
     except Exception as e:
         f = open('log/fail_'+uuid.uuid4().hex, 'w')
         f.write(link)
+        f.close()
         print(link + ' could not be opened.')
         data = ['']
     return data

@@ -5,11 +5,6 @@ import sys
 import time
 import web_tools
 
-# TODO remove when necessary
-#create_author_data("https://data.bnf.fr/en/13893113/georges_delerue", test=True)
-#create_author_data("https://data.bnf.fr/fr/13538475/claude_gillot", test=True)
-#create_author_data("https://data.bnf.fr/fr/11916491/claude_monet", test=True)
-#create_author_data("http://rts.ch", test=True)
 if len(sys.argv) != 2:
     print('Please give the password of GallicaSPARQLBot')
     sys.exit(2)
@@ -18,14 +13,13 @@ web_tools.Login.passw = str(sys.argv[1])
 
 START      = 0
 NB_THREADS = 50
-NUM        = 1
+NUM        = 100
 
 links = list_author_links()
 nb_authors = len(links)
-testMode = True
-pushMode = True
+testMode = False
 
-#create_author_data('https://data.bnf.fr/ark:/12148/cb119297200', 0, True, True)
+#create_author_data('http://data.bnf.fr/ark:/12148/cb135384750', 0, test=testMode)
 
 print('There are ' + str(nb_authors) + ' to parse. Test mode is ' + str(testMode) + '.')
 wish = input('Do you wish to proceed? (Y/n) ')
@@ -38,7 +32,7 @@ for i in range(START, START+NUM):
     while len(threads) > NB_THREADS:
         threads[0].join()
         del threads[0]
-    t = Thread(target=create_author_data, args=(links[i], i, testMode, pushMode))
+    t = Thread(target=create_author_data, args=(links[i], i, testMode))
     t.start()
     threads.append(t)
 
