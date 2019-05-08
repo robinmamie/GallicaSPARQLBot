@@ -8,7 +8,6 @@ Le Gallica SPARQL bot est composé des fichiers suivants:
 - `list_authors.py`: récupère le résultat de la commande SPARQL sauvegardée dans `data/authors_link.txt` afin de lister tous les auteurs dans le fichier `data/authors.txt`
 - `data/authors_link.txt`: requête SPARQL de Gallica retournant un fichier JSON.
 - `data/authors.txt`: éventuellement, liste de lien vers tous les auteurs listés sur Gallica (condition : doivent avoir un nom et un prénom!)
-- `progress.py`: contient une barre de progression utile pour voir la progression du parsing des œuvres.
 - `CONCEPTION.md`: discute des choix de conception du projet.
 
 Exemple de texte affiché sur la console lorsque le fichier des liens des auteurs n'est pas encore présent :
@@ -18,8 +17,12 @@ Exemple de texte affiché sur la console lorsque le fichier des liens des auteur
     Reading links from data/authors.txt file
     Done
 
-    * Author at index 0, 455150 to go
-    Creating Louis-Florian-Paul Kergorlay
+    There are 498000 to parse in total. Test mode is False.
+    The bot will parse authors number 1 to 100.
+    Do you wish to proceed? (Y/n) 
+
+    000018: Franz Gehring
+    - 0 works
     ...
 
 Exemple de texte affiché sur la console lorsque le fichier des liens des auteurs est déjà créé :
@@ -27,7 +30,11 @@ Exemple de texte affiché sur la console lorsque le fichier des liens des auteur
     Reading links from data/authors.txt file
     Done
 
-    * Author at index 0, 455150 to go
-    Creating Louis-Florian-Paul Kergorlay
+    There are 498000 to parse in total. Test mode is False.
+    The bot will parse authors number 1 to 100.
+    Do you wish to proceed? (Y/n) 
+
+    000018: Franz Gehring
+    - 0 works
     ...
 

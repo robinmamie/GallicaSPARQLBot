@@ -71,6 +71,14 @@ def get_work(works, work, content, name, surname, push):
         if push:
             work_content = 'Wikidata: ([https://www.wikidata.org/wiki/Q386724 Q386724])\n\n'
             work_content += 'BnF ID: [' + w_url + ' ' + work_id[-9:] + ']\n\n'
+
+            #Image
+            image = w.get('image')
+            if 'gallica.bnf.fr' in image:
+                image += '.jpg'
+                image_wo_ext = image.replace('.thumbnail.jpg','')
+                work_content += '[' + image_wo_ext + ' ' + image + ']\n\n'
+
             work_content += work_line
             push_page(title, work_content, create_update)
 
@@ -93,7 +101,9 @@ def add_works(content, author, works, name, surname, push):
     return len(allWorks)
 
 def sanitize(s):
-    return s.strip().replace('É', 'E')
+    if s:
+        return s.strip().replace('É', 'E')
+    return s
 
 def create_author_data(author_link, index, test):
 
@@ -127,9 +137,10 @@ def create_author_data(author_link, index, test):
 
     if push:
         push_page(title, content_string, create_update)
-        print('%06d: %s\n- %d works' % (index, name, nb_works))
+        print('%06d: %s\n\t- %d works\n' % (index, name, nb_works), end='')
     else:
-        f = open('log/exists_'+uuid.uuid4().hex, 'w')
+        f = open('log/exists_' + uuid.uuid4().hex[0:7] + '_' + title.replace(' ', '_') + '.log', 'w')
         f.write(content_string)
         f.close()
+        print('%06d: %s \n\t##  EXISTS  ##\n\t- %d works\n' % (index, name, nb_works), end='')
 

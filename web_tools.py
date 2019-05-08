@@ -73,7 +73,7 @@ def get_json(link):
         with urlopen(link) as url:
             data = json.loads(url.read().decode())
     except Exception as e:
-        f = open('log/fail_'+uuid.uuid4().hex, 'w')
+        f = open('log/fail_'+uuid.uuid4().hex[0:7] + '.log', 'w')
         f.write(link)
         f.close()
         print(link + ' could not be opened.')

@@ -21,7 +21,8 @@ testMode = False
 
 #create_author_data('http://data.bnf.fr/ark:/12148/cb135384750', 0, test=testMode)
 
-print('There are ' + str(nb_authors) + ' to parse. Test mode is ' + str(testMode) + '.')
+print('There are ' + str(nb_authors) + ' to parse in total. Test mode is ' + str(testMode) + '.')
+print('The bot will parse authors number ' + str(START) + ' to ' + str(START + NUM - 1) + '.')
 wish = input('Do you wish to proceed? (Y/n) ')
 if wish != '' and wish != 'y' and wish != 'Y':
     sys.exit()
