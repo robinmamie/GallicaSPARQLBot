@@ -32,15 +32,16 @@ def add_biography(content, author, works, name, link):
         pob = None
         pod = None
 
-        for a in works.get('@graph'):
-            cand_pob = a.get('rdagroup2elements:placeOfBirth')
-            cand_pod = a.get('rdagroup2elements:placeOfDeath')
-            if cand_pob:
-                pob = cand_pob.split(' (')[0].split(',')[0]
-            if cand_pod:
-                pod = cand_pod.split(' (')[0].split(',')[0]
-            if pob or pod:
-                break
+        if works:
+            for a in works.get('@graph'):
+                cand_pob = a.get('rdagroup2elements:placeOfBirth')
+                cand_pod = a.get('rdagroup2elements:placeOfDeath')
+                if cand_pob:
+                    pob = cand_pob.split(' (')[0].split(',')[0]
+                if cand_pod:
+                    pod = cand_pod.split(' (')[0].split(',')[0]
+                if pob or pod:
+                    break
 
         birth = create_event(dob, pob, toLink('Naissance') + ' de ' + toLink(name), link)
         death = create_event(dod, pod, toLink('Décès') + ' de ' + toLink(name), link)
@@ -57,8 +58,9 @@ def get_work(works, work, content, name, surname, push):
         w = get_json(w_url[0:-1] + '.json')[0]
         if not w:
             return
-        title = w.get('label') + ' (' + surname + ')'
-        event = toLink(key_word) + ' par ' + toLink(name) + ' de ' + toLink(title + '|' + w.get('label'))
+        label = sanitize(w.get('label'))
+        title = label + ' (' + surname + ')'
+        event = toLink(key_word) + ' par ' + toLink(name) + ' de ' + toLink(title + '|' + label)
         info = get_json(w_url + 'rdf.jsonld')
         work_id = w.get('ark')[-9:]
         if info:
@@ -73,21 +75,22 @@ def get_work(works, work, content, name, surname, push):
         work_line = create_event(w.get('publication'), None, event, w_url)
         if work_line:
             content.append(work_line)
-        if push:
-            work_content = 'Wikidata: ([https://www.wikidata.org/wiki/Q386724 Q386724])\n\n'
-            work_content += 'BnF ID: [' + w_url + ' ' + work_id[-9:] + ']\n\n'
+        work_content = 'Wikidata: ([https://www.wikidata.org/wiki/Q386724 Q386724])\n\n'
+        work_content += 'BnF ID: [' + w_url + ' ' + work_id[-9:] + ']\n\n'
 
-            #Image
-            image = w.get('image')
-            if 'gallica.bnf.fr' in image:
-                image += '.jpg'
-                image_wo_ext = image.replace('.thumbnail.jpg','')
-                work_content += '[' + image_wo_ext + ' ' + image + ']\n\n'
+        #Image
+        image = w.get('image')
+        if 'gallica.bnf.fr' in image:
+            image += '.jpg'
+            image_wo_ext = image.replace('.thumbnail.jpg','')
+            work_content += '[' + image_wo_ext + ' ' + image + ']\n\n'
 
-            work_content += work_line
-            push_page(title, work_content, create_update)
+        work_content += work_line
+        push_page(title, work_content, create_update)
 
 def add_works(content, author, works, name, surname, push):
+    if not works:
+        return
     # Author's contributions
     allWorks = author.get('works', [])
 
@@ -106,7 +109,7 @@ def add_works(content, author, works, name, surname, push):
 
 def sanitize(s):
     if s:
-        return s.strip().replace('É', 'E')
+        return s.strip().replace('[', '(').replace(']', ')')
     return s
 
 def create_author_data(author_link, index, test):
@@ -119,12 +122,9 @@ def create_author_data(author_link, index, test):
     works  = get_json(author.get('url') + 'rdf.jsonld')
 
     # Define identity variables
-    firstname = sanitize(author.get('firstname'))
     surname   = sanitize(author.get('surname'))
-    name      = surname
-    if firstname:
-        name = firstname + ' ' + name
-    title = name
+    name      = sanitize(author.get('label').split('(')[0])
+    title     = name
     if test:
         title = 'Test ' + title
 
@@ -149,6 +149,13 @@ def create_author_data(author_link, index, test):
 
     content.insert(0, 'Wikidata: ([https://www.wikidata.org/wiki/Q5 Q5])\n')
     content.insert(1, 'BnF ID: [' + author_link + ' ' + author_link[-9:] + ']\n')
+    #Image
+    image = author.get('image')
+    if 'gallica.bnf.fr' in image:
+        image += '.jpg'
+        image_wo_ext = image.replace('.thumbnail.jpg','')
+        content.insert(2, '[' + image_wo_ext + ' ' + image + ']\n')
+
     content_string = '\n'.join(content)
 
     if push:

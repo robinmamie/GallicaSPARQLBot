@@ -56,7 +56,15 @@ def import_page(content, title):
     revs = tree.xpath('//rev')
     if revs and revs[-1].text:
         old_content = revs[-1].text.split('\n')
-        listed_old_content = [x for x in old_content if x and x[0] == '*']
+        listed_old_content = []
+        no_list = True
+        first_list = True
+        for x in old_content:
+            if x and x[0] == '*' and first_list:
+                no_list = False
+                listed_old_content.append(x)
+            if x and x[0] != '*' and not no_list:
+                first_list = False
         content.extend(listed_old_content)
         return False
     return True
