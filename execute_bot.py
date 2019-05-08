@@ -11,7 +11,7 @@ if len(sys.argv) != 2:
 
 web_tools.Login.passw = str(sys.argv[1])
 
-START      = 0
+START      = 1000
 NB_THREADS = 50
 NUM        = 100
 
@@ -19,7 +19,7 @@ links = list_author_links()
 nb_authors = len(links)
 testMode = False
 
-#create_author_data('http://data.bnf.fr/ark:/12148/cb135384750', 0, test=testMode)
+#create_author_data('http://data.bnf.fr/ark:/12148/cb11885977m', 0, False)
 
 print('There are ' + str(nb_authors) + ' to parse in total. Test mode is ' + str(testMode) + '.')
 print('The bot will parse authors number ' + str(START) + ' to ' + str(START + NUM - 1) + '.')
@@ -31,8 +31,7 @@ start_time = time.time()
 threads = []
 for i in range(START, START+NUM):
     while len(threads) > NB_THREADS:
-        threads[0].join()
-        del threads[0]
+        threads = [t for t in threads if t.is_alive()]
     t = Thread(target=create_author_data, args=(links[i], i, testMode))
     t.start()
     threads.append(t)

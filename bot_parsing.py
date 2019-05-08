@@ -13,7 +13,10 @@ def toLink(s):
 def create_event(date, place, descr, link):
     if not date:
         return ''
-    date = date.replace('-', '.')
+    date = date.replace(' ', '').replace('-', '.')
+    # Beware of negative dates
+    if date[0] == '.':
+        date = '-' + date[1:]
     event = '*' + toLink(date)
     if place:
         event += ' / ' + toLink(place)
@@ -29,13 +32,13 @@ def add_biography(content, author, works, name, link):
         pob = None
         pod = None
 
-        for a in works['@graph']:
+        for a in works.get('@graph'):
             cand_pob = a.get('rdagroup2elements:placeOfBirth')
             cand_pod = a.get('rdagroup2elements:placeOfDeath')
             if cand_pob:
-                pob = cand_pob.split(' (')[0]
+                pob = cand_pob.split(' (')[0].split(',')[0]
             if cand_pod:
-                pod = cand_pod.split(' (')[0]
+                pod = cand_pod.split(' (')[0].split(',')[0]
             if pob or pod:
                 break
 
@@ -53,15 +56,17 @@ def get_work(works, work, content, name, surname, push):
     if w_url:
         w = get_json(w_url[0:-1] + '.json')[0]
         if not w:
-            print("Invalid work link given: " + w_url)
             return
         title = w.get('label') + ' (' + surname + ')'
         event = toLink(key_word) + ' par ' + toLink(name) + ' de ' + toLink(title + '|' + w.get('label'))
         info = get_json(w_url + 'rdf.jsonld')
         work_id = w.get('ark')[-9:]
         if info:
-            for i in info['@graph']:
+            for i in info.get('@graph'):
                 cand_type = i.get('bnf-onto:subject')
+                # Can somtimes be an array
+                if cand_type and not isinstance(cand_type, str):
+                    cand_type = cand_type[0]
                 if cand_type:
                     event += ' (' + toLink(cand_type) + ')'
                     break
@@ -90,8 +95,7 @@ def add_works(content, author, works, name, surname, push):
         threads = []
         for work in allWorks:
             while len(threads) >= 10:
-                threads[0].join()
-                del threads[0]
+                threads = [t for t in threads if t.is_alive()]
             thread = Thread(target = get_work, args = (works, work, content, name, surname, push))
             thread.start()
             threads.append(thread)
@@ -131,6 +135,18 @@ def create_author_data(author_link, index, test):
     # Remove duplicates if bot already there
     content = list(set(content))
     content.sort()
+    # This takes shorter years into account (999 vs 1001)
+    content.sort(key=lambda x: int((x.split('[[')[1]).split(']]')[0].split('.')[0]))
+
+    # Sort negative content differently
+    neg_content = [x for x in content if '*[[-' in x]
+    if neg_content:
+        content = [c for c in content if c not in neg_content]
+        neg_content.sort(reverse=True, key=lambda x: int((x.split('[[-')[1]).split(']]')[0].split('.')[0]))
+        neg_content.extend(content)
+        content = neg_content
+        
+
     content.insert(0, 'Wikidata: ([https://www.wikidata.org/wiki/Q5 Q5])\n')
     content.insert(1, 'BnF ID: [' + author_link + ' ' + author_link[-9:] + ']\n')
     content_string = '\n'.join(content)
