@@ -59,6 +59,7 @@ def get_work(works, work, content, name, surname, push):
         if not w:
             return
         label = sanitize(w.get('label'))
+        label = (label[:150] + '...') if len(label) > 153 else label
         title = label + ' (' + surname + ')'
         event = toLink(key_word) + ' par ' + toLink(name) + ' de ' + toLink(title + '|' + label)
         info = get_json(w_url + 'rdf.jsonld')
