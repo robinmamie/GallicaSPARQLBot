@@ -11,13 +11,13 @@ if len(sys.argv) != 2:
 
 web_tools.Login.passw = str(sys.argv[1])
 
-START      = 3000
+START      = 326553
 NB_THREADS = 20
-NUM        = 7000
 
 links = list_author_links()
 nb_authors = len(links)
 testMode = False
+NUM        = nb_authors - START
 
 #create_author_data('http://data.bnf.fr/ark:/12148/cb11885942z', 0, False)
 
