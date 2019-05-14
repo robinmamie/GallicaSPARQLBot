@@ -123,7 +123,10 @@ def create_author_data(author_link, index, test):
     works  = get_json(author.get('url') + 'rdf.jsonld')
 
     # Define identity variables
-    surname   = sanitize(author.get('surname'))
+    if 'surname' not in author:
+        return
+
+    surname   = sanitize(author['surname'])
     name      = sanitize(author.get('label').split('(')[0])
     title     = name
     if test:
