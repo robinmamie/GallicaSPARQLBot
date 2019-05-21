@@ -23,7 +23,7 @@ def create_event(date, place, descr, link):
     return event + '. ' + descr + '. ' + toExtLink(link)
 
 
-def add_biography(content, author, works, name, link):
+def add_biography(content, author, works, name, link, title):
     # Biographical information (birth and death)
     dob = author.get('birthdate', '')
     dod = author.get('deathdate', '')
@@ -43,8 +43,8 @@ def add_biography(content, author, works, name, link):
                 if pob or pod:
                     break
 
-        birth = create_event(dob, pob, toLink('Naissance') + ' de ' + toLink(name), link)
-        death = create_event(dod, pod, toLink('Décès') + ' de ' + toLink(name), link)
+        birth = create_event(dob, pob, toLink('Naissance') + ' de ' + toLink(title + '|' + name), link)
+        death = create_event(dod, pod, toLink('Décès') + ' de ' + toLink(title + '|' + name), link)
 
         if birth:
             content.append(birth)
@@ -52,7 +52,7 @@ def add_biography(content, author, works, name, link):
             content.append(death)
 
 
-def get_work(works, work, content, name, surname, push):
+def get_work(works, work, content, name, surname, push, title_name):
     w_url = work.get('url')
     if w_url:
         w = get_json(w_url[0:-1] + '.json')[0]
@@ -61,7 +61,7 @@ def get_work(works, work, content, name, surname, push):
         label = sanitize(w.get('label'))
         label = (label[:150] + '...') if len(label) > 153 else label
         title = label + ' (' + surname + ')'
-        event = toLink(key_word) + ' par ' + toLink(name) + ' de ' + toLink(title + '|' + label)
+        event = toLink(key_word) + ' par ' + toLink(title_name + '|' + name) + ' de ' + toLink(title + '|' + label)
         info = get_json(w_url + 'rdf.jsonld')
         work_id = w.get('ark')[-9:]
         if info:
@@ -89,7 +89,7 @@ def get_work(works, work, content, name, surname, push):
         work_content += work_line
         push_page(title, work_content, create_update)
 
-def add_works(content, author, works, name, surname, push):
+def add_works(content, author, works, name, surname, push, title):
     if not works:
         return
     # Author's contributions
@@ -100,7 +100,7 @@ def add_works(content, author, works, name, surname, push):
         for work in allWorks:
             while len(threads) >= 10:
                 threads = [t for t in threads if t.is_alive()]
-            thread = Thread(target = get_work, args = (works, work, content, name, surname, push))
+            thread = Thread(target = get_work, args = (works, work, content, name, surname, push, title))
             thread.start()
             threads.append(thread)
         for t in threads:
@@ -113,7 +113,7 @@ def sanitize(s):
         return s.strip().replace('[', '(').replace(']', ')')
     return s
 
-def create_author_data(author_link, index, test):
+def create_author_data(author_link, index, test, uuid_a=''):
 
     author = get_json(author_link + '.json')[0]
 
@@ -132,10 +132,15 @@ def create_author_data(author_link, index, test):
     if test:
         title = 'Test ' + title
 
+    if uuid_a:
+        title = title + ' (' + uuid_a + ')'
+
     content = []
-    push = import_page(content, title)
-    add_biography(content, author, works, name, author_link)
-    nb_works = add_works(content, author, works, name, surname, push)
+    push = True
+    if not uuid_a:
+        push = import_page(content, title)
+    add_biography(content, author, works, name, author_link, title)
+    nb_works = add_works(content, author, works, name, surname, push, title)
     # Remove duplicates if bot already there
     content = list(set(content))
     content.sort()
@@ -164,10 +169,10 @@ def create_author_data(author_link, index, test):
 
     if push:
         push_page(title, content_string, create_update)
-        print('%06d: %s\n\t- %d works\n' % (index, name, nb_works), end='')
+        print('%06d: %s\n\t- %d works\n' % (index, title, nb_works), end='')
     else:
         f = open('log/exists_' + uuid.uuid4().hex[0:7] + '_' + title.replace(' ', '_') + '.log', 'w')
         f.write(content_string)
         f.close()
-        print('%06d: %s \n\t##  EXISTS  ##\n\t- %d works\n' % (index, name, nb_works), end='')
+        print('%06d: %s \n\t##  EXISTS  ##\n\t- %d works\n' % (index, title, nb_works), end='')
 
