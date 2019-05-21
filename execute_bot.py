@@ -11,15 +11,13 @@ if len(sys.argv) != 2:
 
 web_tools.Login.passw = str(sys.argv[1])
 
-START      = 326553
+START      = 0
 NB_THREADS = 20
 
 links = list_author_links()
 nb_authors = len(links)
 testMode = False
 NUM        = nb_authors - START
-
-#create_author_data('http://data.bnf.fr/ark:/12148/cb11885942z', 0, False)
 
 print('There are ' + str(nb_authors) + ' to parse in total. Test mode is ' + str(testMode) + '.')
 print('The bot will parse authors number ' + str(START) + ' to ' + str(START + NUM - 1) + '.')
