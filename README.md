@@ -9,7 +9,7 @@ Le Gallica SPARQL bot est composé des fichiers suivants:
 - `web_tools.py`: contient les outils nécessaires pour récupérer et éditer diverses pages en ligne (wikipast, JSON, ...)
 - `list_authors.py`: récupère le résultat de la commande SPARQL sauvegardée dans `data/authors_link.txt` afin de lister tous les auteurs dans le fichier `data/authors.txt`
 - `data/authors_link.txt`: requête SPARQL de Gallica retournant un fichier JSON.
-- `data/authors.txt`: éventuellement, liste de lien vers tous les auteurs listés sur Gallica (condition : doivent avoir un nom et un prénom!)
+- `data/authors.txt`: éventuellement, liste de lien vers tous les auteurs listés sur Gallica.
 - `CONCEPTION.md`: discute des choix de conception du projet.
 
 Exemple de texte affiché sur la console lorsque le fichier des liens des auteurs n'est pas encore présent :
